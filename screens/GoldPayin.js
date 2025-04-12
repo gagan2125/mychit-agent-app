@@ -11,7 +11,7 @@ import Button from "../components/Button";
 import baseUrl from "../constants/baseUrl";
 
 const GoldPayin = ({ route, navigation }) => {
-  const { customer } = route.params;
+  const { user, customer } = route.params;
 
   const [currentDate, setCurrentDate] = useState("");
   const [receipt, setReceipt] = useState({});
@@ -27,12 +27,13 @@ const GoldPayin = ({ route, navigation }) => {
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedTicket, setSelectedTicket] = useState("");
   const [allData, setAllData] = useState([]);
+  const [agent, setAgent] = useState([]);
 
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
         const response = await axios.get(
-          `http://13.60.68.201:3000/api/user/get-user-by-id/${customer}`
+          `http://13.51.87.99:3000/api/user/get-user-by-id/${customer}`
         );
         if (response.data) {
           setCustomerInfo(response.data);
@@ -51,7 +52,7 @@ const GoldPayin = ({ route, navigation }) => {
     const fetchEnrollDetails = async () => {
       try {
         const response = await axios.post(
-          `http://13.60.68.201:3000/api/enroll/get-user-tickets/${customer}`
+          `http://13.51.87.99:3000/api/enroll/get-user-tickets/${customer}`
         );
         setAllData(response.data);
         const uniqueGroups = response.data.reduce((acc, group) => {
@@ -77,7 +78,7 @@ const GoldPayin = ({ route, navigation }) => {
     const fetchReceipt = async () => {
       try {
         const response = await axios.get(
-          `http://13.60.68.201:3000/api/payment/get-latest-receipt`
+          `http://13.51.87.99:3000/api/payment/get-latest-receipt`
         );
 
         setReceipt(response.data);
@@ -86,6 +87,25 @@ const GoldPayin = ({ route, navigation }) => {
       }
     };
     fetchReceipt();
+  }, []);
+
+  useEffect(() => {
+    const fetchAgent = async () => {
+      try {
+        const response = await axios.get(
+          `${baseUrl}/agent/get-agent-by-id/${user.userId}`
+        );
+        if (response.data) {
+          setAgent(response.data);
+        } else {
+          console.error("Unexpected API response format:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching agent data:", error);
+      }
+    };
+
+    fetchAgent();
   }, []);
 
   const handleGroupChange = (groupId) => {
@@ -101,7 +121,6 @@ const GoldPayin = ({ route, navigation }) => {
       setTickets([]);
     }
   };
-
 
   const handlePaymentTypeChange = (type) => {
     setPaymentDetails(type);
@@ -128,8 +147,10 @@ const GoldPayin = ({ route, navigation }) => {
         pay_type: paymentDetails,
         amount: amount,
         transaction_id: transactionId,
+        collected_name: agent.name,
+        collected_phone: agent.phone_number,
       };
-      const response = await axios.post(`http://13.60.68.201:3000/api/payment/add-payment`, data);
+      const response = await axios.post(`http://13.51.87.99:3000/api/payment/add-payment`, data);
       if (response.status === 201) {
         Alert.alert("Success", "Payment added successfully!");
         navigation.navigate("GoldPrint", { store_id: response.data._id });

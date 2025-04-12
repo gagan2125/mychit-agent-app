@@ -67,7 +67,7 @@ const GoldPayments = ({ route, navigation }) => {
       try {
         setLoading(true)
         const response = await axios.get(
-          `http://13.60.68.201:3000/api/payment/get-payment`
+          `http://13.51.87.99:3000/api/payment/get-payment`
         );
         if (response.data) {
           setCustomers(response.data);
@@ -89,7 +89,7 @@ const GoldPayments = ({ route, navigation }) => {
       try {
         setLoading(true)
         const response = await axios.get(
-          `http://13.60.68.201:3000/api/user/get-user`
+          `http://13.51.87.99:3000/api/user/get-user`
         );
         if (response.data) {
           setCus(response.data);
@@ -111,7 +111,7 @@ const GoldPayments = ({ route, navigation }) => {
       try {
         setLoading(true)
         const response = await axios.get(
-          `http://13.60.68.201:3000/api/group/get-group`
+          `http://13.51.87.99:3000/api/group/get-group`
         );
         if (response.data) {
           setGroups(response.data);

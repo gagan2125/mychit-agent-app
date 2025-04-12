@@ -24,7 +24,7 @@ const GoldPrint = ({ route }) => {
     const fetchDetails = async () => {
       try {
         const response = await axios.get(
-          `http://13.60.68.201:3000/api/payment/get-payment-by-id/${store_id}`
+          `http://13.51.87.99:3000/api/payment/get-payment-by-id/${store_id}`
         );
         setPayInfo(response.data)
         console.log(response.data)

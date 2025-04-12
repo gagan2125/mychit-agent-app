@@ -22,7 +22,7 @@ const RouteCustomerGold = ({ route, navigation }) => {
       try {
         setLoading(true)
         const response = await axios.get(
-          `http://13.60.68.201:3000/api/user/get-user`
+          `http://13.51.87.99:3000/api/user/get-user`
         );
         if (response.data) {
           setCustomers(response.data);
