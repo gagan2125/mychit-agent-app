@@ -3,158 +3,136 @@ import {
 	Text,
 	FlatList,
 	StyleSheet,
-	TextInput,
-	Alert,
 	KeyboardAvoidingView,
 	Platform,
-	ScrollView,
 	TouchableOpacity,
 	ActivityIndicator,
+	Linking,
+	Alert,
+	Pressable,
 } from "react-native";
+import { TapGestureHandler } from "react-native-gesture-handler";
 import React, { useState, useEffect, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
-import moment from "moment";
-
 import COLORS from "../constants/color";
 import Header from "../components/Header";
-import Button from "../components/Button";
 import baseUrl from "../constants/baseUrl";
-import { useFocusEffect } from "@react-navigation/native";
-const ViewLeads = ({ route, navigation }) => {
-	const { user, customer } = route.params;
+import { Feather } from "@expo/vector-icons";
 
-	const [currentDate, setCurrentDate] = useState("");
-	const [receipt, setReceipt] = useState({});
-	const [paymentDetails, setPaymentDetails] = useState("");
-	const [amount, setAmount] = useState("");
-	const [transactionId, setTransactionId] = useState("");
-	const [additionalInfo, setAdditionalInfo] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-
-	const [customerInfo, setCustomerInfo] = useState({
-		full_name: "",
-		phone_number: "",
-		profession: "",
-	});
-
-	const [groups, setGroups] = useState([]);
-	const [tickets, setTickets] = useState([]);
-	const [selectedGroup, setSelectedGroup] = useState("");
-	const [selectedTicket, setSelectedTicket] = useState("");
-	const [allData, setAllData] = useState([]);
-	const [chitLeads, setChitLeads] = useState([]);
-	const [goldLeads, setGoldLeads] = useState([]);
+const ViewCustomers = ({ route, navigation }) => {
+	const { user } = route.params;
+	const [chitCustomerLength, setChitCustomerLength] = useState(0);
+	const [goldCustomerLength, setGoldCustomerLength] = useState(0);
 	const [isChitLoading, setIsChitLoading] = useState(false);
 	const [isGoldLoading, setIsGoldLoading] = useState(false);
+	const [customers, setCustomer] = useState([]);
 	const [activeTab, setActiveTab] = useState("CHIT");
 
+	const handleTelephone = () => {};
+	const handleEmail = () => {};
 	useEffect(() => {
-		const fetchGroups = async () => {
+		const fetchCustomers = async () => {
 			const currentUrl =
-				selectedTicket === "chit"
-					? `${baseUrl}`
-					: "http://13.60.68.201:3000/api";
-
+				activeTab === "CHIT" ? `${baseUrl}` : "http://13.60.68.201:3000/api";
 			try {
-				const response = await axios.get(`${currentUrl}/group/get-group`);
-				if (response.data) {
-					setGroups(response.data || []);
-				} else {
-					console.error("No data in response");
+				activeTab === "CHIT" ? setIsChitLoading(true) : setIsGoldLoading(true);
+				const response = await axios.get(`${currentUrl}/user/get-user`);
+				if (response.status >= 400)
+					throw new Error("Failed to fetch Customer Data");
+				setCustomer(response.data);
+				activeTab === "CHIT"
+					? setChitCustomerLength(response?.data?.length)
+					: setGoldCustomerLength(response?.data?.length);
+			} catch (err) {
+				setCustomer([]);
+			} finally {
+				activeTab === "CHIT"
+					? setIsChitLoading(false)
+					: setIsGoldLoading(false);
+			}
+		};
+		fetchCustomers();
+	}, [activeTab]);
+
+	const renderCustomerCard = ({ item }) => (
+		<TapGestureHandler
+			numberOfTaps={2}
+			onActivated={() => {
+				if (item?.phone_number) {
+					let message = `Welcome to MyChits! 💙
+We're so glad to have you here!
+Install our app to explore all our plans and discover how we can help you save and grow. 📲✨
+
+Our Customer app
+https://play.google.com/store/apps/details?id=com.gagansk.cusapp&pcampaignid=web_share
+`;
+
+					let url = `whatsapp://send?phone=${
+						item.phone_number
+					}&text=${encodeURIComponent(message)}`;
+
+					Linking.canOpenURL(url)
+						.then((supported) => {
+							if (supported) {
+								return Linking.openURL(url);
+							} else {
+								Alert.alert("WhatsApp is not installed");
+							}
+						})
+						.catch((err) => console.error("An error occurred", err));
 				}
-			} catch (error) {
-				console.error("Error fetching groups:", error.message);
-			}
-		};
-
-		if (selectedTicket) {
-			fetchGroups();
-		}
-	}, [selectedTicket]);
-
-	useEffect(() => {
-		const today = moment().format("DD-MM-YYYY");
-		setCurrentDate(today);
-	}, []);
-
-	useEffect(() => {
-		const fetchReceipt = async () => {
-			try {
-				const response = await axios.get(
-					`${baseUrl}/agent/get-agent-by-id/${user.userId}`
-				);
-
-				setReceipt(response.data);
-			} catch (error) {
-				console.error("Error fetching agent data:", error);
-			}
-		};
-		fetchReceipt();
-	}, []);
-
-	const fetchChitLeads = async () => {
-		setIsChitLoading(true);
-		try {
-			const response = await axios.get(
-				`${baseUrl}/lead/get-lead-by-agent/${receipt.phone_number}`
-			);
-			setChitLeads(response.data);
-		} catch (error) {
-			console.error("Error fetching chit leads data:", error);
-		} finally {
-			setIsChitLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchChitLeads();
-	}, [receipt.phone_number]);
-
-	const fetchGoldLeads = async () => {
-		setIsGoldLoading(true);
-		try {
-			const response = await axios.get(
-				`http://13.60.68.201:3000/api/lead/get-lead-by-agent/${receipt.phone_number}`
-			);
-			setGoldLeads(response.data);
-		} catch (error) {
-			console.error("Error fetching gold leads data:", error);
-		} finally {
-			setIsGoldLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchGoldLeads();
-	}, [receipt.phone_number]);
-
-	useFocusEffect(
-		useCallback(() => {
-			fetchChitLeads();
-			fetchGoldLeads();
-		}, [receipt.phone_number])
-	);
-
-	const renderLeadCard = ({ item }) => (
-		<>
+			}}
+		>
 			<View style={styles.card}>
 				<View style={styles.leftSection}>
-					<Text style={styles.name}>{item.lead_name}</Text>
-					<Text style={styles.groupName}>
-						{item.group_id ? item.group_id.group_name : "No Group"}
-					</Text>
+					<Text style={styles.name}>{item?.full_name || "No Name"}</Text>
+					<TouchableOpacity
+						onPress={async () => {
+							if (item?.email) {
+								Linking.canOpenURL(`mailto:${item.email}`)
+									.then((supported) => {
+										if (supported) {
+											Linking.openURL(`mailto:${item.email}`);
+										} else {
+											Alert.alert("Mail service is not installed");
+										}
+									})
+									.catch((err) => {
+										Alert.alert("Something went wrong!");
+									});
+							}
+						}}
+					>
+						<Text style={styles.groupName}>{item?.email || "No Email"}</Text>
+					</TouchableOpacity>
 				</View>
 				<View style={styles.rightSection}>
 					<Text style={styles.schemeType}>
-						{item.scheme_type.charAt(0).toUpperCase() +
-							item.scheme_type.slice(1)}
+						{activeTab[0] + activeTab?.slice(1).toLowerCase()}
 					</Text>
-					<Text style={styles.phoneNumber}>{item.lead_phone}</Text>
+					<TouchableOpacity
+						onPress={async () => {
+							if (item.phone_number) {
+								Linking.canOpenURL(`tel:${item.phone_number}`)
+									.then((supported) => {
+										if (supported) {
+											Linking.openURL(`tel:${item.phone_number}`);
+										}
+									})
+									.catch((err) => {
+										Alert.alert("Somthing went wrong!");
+									});
+							}
+						}}
+					>
+						<Text style={styles.phoneNumber}>
+							{item.phone_number || "No Mob Number"}
+						</Text>
+					</TouchableOpacity>
 				</View>
 			</View>
-		</>
+		</TapGestureHandler>
 	);
 
 	return (
@@ -164,7 +142,7 @@ const ViewLeads = ({ route, navigation }) => {
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
 			>
-				<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+				<View style={{ flexGrow: 1 }}>
 					<View style={{ marginHorizontal: 22, marginTop: 12, flex: 1 }}>
 						<Header />
 						<View
@@ -175,9 +153,11 @@ const ViewLeads = ({ route, navigation }) => {
 								justifyContent: "space-between",
 							}}
 						>
-							<Text style={{ fontWeight: "bold", fontSize: 18 }}>Leads</Text>
 							<Text style={{ fontWeight: "bold", fontSize: 18 }}>
-								{(chitLeads.length + goldLeads.length) | 0}
+								Customers
+							</Text>
+							<Text style={{ fontWeight: "bold", fontSize: 18 }}>
+								{(chitCustomerLength + goldCustomerLength) | 0}
 							</Text>
 						</View>
 
@@ -193,7 +173,7 @@ const ViewLeads = ({ route, navigation }) => {
 											activeTab === "CHIT" && styles.activeTabText,
 										]}
 									>
-										Chits {chitLeads.length || 0}
+										Chits {chitCustomerLength || 0}
 									</Text>
 								</TouchableOpacity>
 
@@ -207,7 +187,7 @@ const ViewLeads = ({ route, navigation }) => {
 											activeTab === "GOLD" && styles.activeTabText,
 										]}
 									>
-										Gold Chits {goldLeads.length || 0}
+										Gold Chits {goldCustomerLength || 0}
 									</Text>
 								</TouchableOpacity>
 							</View>
@@ -219,35 +199,38 @@ const ViewLeads = ({ route, navigation }) => {
 										color="#000"
 										style={{ marginTop: 20 }}
 									/>
-								) : chitLeads.length === 0 ? (
-									<Text style={styles.noLeadsText}>No chit leads found</Text>
+								) : chitCustomerLength === 0 ? (
+									<Text style={styles.noLeadsText}>
+										No Chit Customers found
+									</Text>
 								) : (
 									<FlatList
-										data={chitLeads}
+										data={customers}
 										keyExtractor={(item, index) => index.toString()}
-										renderItem={renderLeadCard}
+										renderItem={renderCustomerCard}
 									/>
 								)
 							) : isGoldLoading ? (
 								<ActivityIndicator
 									size="large"
 									color="#000"
+									Chits
 									style={{ marginTop: 20 }}
 								/>
-							) : goldLeads.length === 0 ? (
-								<Text style={styles.noLeadsText}>No gold leads found</Text>
+							) : goldCustomerLength === 0 ? (
+								<Text style={styles.noLeadsText}>No gold Customers found</Text>
 							) : (
 								<FlatList
-									data={goldLeads}
+									data={customers}
 									keyExtractor={(item, index) => index.toString()}
-									renderItem={renderLeadCard}
+									renderItem={renderCustomerCard}
 								/>
 							)}
 						</View>
 					</View>
-				</ScrollView>
+				</View>
 				<TouchableOpacity
-					onPress={() => navigation.navigate("AddLead", { user: user })}
+					onPress={() => navigation.navigate("AddCustomer", { user: user })}
 					style={{
 						position: "absolute",
 						bottom: 20,
@@ -273,7 +256,7 @@ const ViewLeads = ({ route, navigation }) => {
 							textAlign: "center",
 						}}
 					>
-						+ Add
+						<Feather name="user-plus" size={20} />
 					</Text>
 				</TouchableOpacity>
 			</KeyboardAvoidingView>
@@ -336,6 +319,8 @@ const styles = StyleSheet.create({
 	tab: {
 		flex: 1,
 		paddingVertical: 10,
+		justifyContent: "center",
+
 		alignItems: "center",
 		borderBottomWidth: 1,
 		borderBottomColor: "transparent",
@@ -348,6 +333,7 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: "#666",
 		fontWeight: "500",
+		textAlign: "center",
 	},
 	activeTabText: {
 		color: COLORS.primary,
@@ -397,4 +383,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default ViewLeads;
+export default ViewCustomers;
