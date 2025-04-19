@@ -19,52 +19,9 @@ import COLORS from "../constants/color";
 import Header from "../components/Header";
 import baseUrl from "../constants/baseUrl";
 import { Feather } from "@expo/vector-icons";
-const sendWhatsappMessage = async (item) => {
-	if (item?.phone_number) {
-		let url = `whatsapp://send?phone=${
-			item.phone_number
-		}&text=${encodeURIComponent(whatsappMessage)}`;
+import { whatsappMessage } from "../components/data/messages";
 
-		Linking.canOpenURL(url)
-			.then((supported) => {
-				if (supported) {
-					return Linking.openURL(url);
-				} else {
-					Alert.alert("WhatsApp is not installed");
-				}
-			})
-			.catch((err) => console.error("An error occurred", err));
-	}
-};
-const openDialer = (item) => {
-	if (item.phone_number) {
-		Linking.canOpenURL(`tel:${item.phone_number}`)
-			.then((supported) => {
-				if (supported) {
-					Linking.openURL(`tel:${item.phone_number}`);
-				}
-			})
-			.catch((err) => {
-				Alert.alert("Somthing went wrong!");
-			});
-	}
-};
-const sendEmail = async (item) => {
-	if (item?.email) {
-		Linking.canOpenURL(`mailto:${item.email}`)
-			.then((supported) => {
-				if (supported) {
-					Linking.openURL(`mailto:${item.email}`);
-				} else {
-					Alert.alert("Mail service is not installed");
-				}
-			})
-			.catch((err) => {
-				Alert.alert("Something went wrong!");
-			});
-	}
-};
-const ViewCustomers = ({ route, navigation }) => {
+const ViewEnrollments = ({ route, navigation }) => {
 	const { user } = route.params;
 	const [chitCustomerLength, setChitCustomerLength] = useState(0);
 	const [goldCustomerLength, setGoldCustomerLength] = useState(0);
@@ -72,21 +29,53 @@ const ViewCustomers = ({ route, navigation }) => {
 	const [isGoldLoading, setIsGoldLoading] = useState(false);
 	const [customers, setCustomer] = useState([]);
 	const [activeTab, setActiveTab] = useState("CHIT");
+	const sendWhatsappMessage = async (item) => {
+		if (item.user_id?.phone_number) {
+			let url = `whatsapp://send?phone=${
+				item.user_id?.phone_number
+			}&text=${encodeURIComponent(whatsappMessage)}`;
 
-	const handleTelephone = () => {};
-	const handleEmail = () => {};
+			Linking.canOpenURL(url)
+				.then((supported) => {
+					if (supported) {
+						return Linking.openURL(url);
+					} else {
+						Alert.alert("WhatsApp is not installed");
+					}
+				})
+				.catch((err) => console.error("An error occurred", err));
+		} else {
+			return;
+		}
+	};
+	const openDialer = (item) => {
+		if (item?.user_id?.phone_number) {
+			Linking.canOpenURL(`tel:${item.user_id.phone_number}`)
+				.then((supported) => {
+					if (supported) {
+						Linking.openURL(`tel:${item.user_id.phone_number}`);
+					}
+				})
+				.catch((err) => {
+					Alert.alert("Somthing went wrong!");
+				});
+		} else {
+			return;
+		}
+	};
+
 	useEffect(() => {
-		console.log(user, "this is user");
-		const fetchCustomers = async () => {
+		const fetchEnrolledCustomers = async () => {
 			const currentUrl =
 				activeTab === "CHIT" ? `${baseUrl}` : "http://13.60.68.201:3000/api";
 			try {
 				activeTab === "CHIT" ? setIsChitLoading(true) : setIsGoldLoading(true);
 				const response = await axios.get(
-					`${currentUrl}/user/get-users-by-agent-id/${user.userId}`
+					`${currentUrl}/enroll/get-enroll-by-agent-id/${user.userId}`
 				);
+				console.log(response.data);
 				if (response.status >= 400)
-					throw new Error("Failed to fetch Customer Data");
+					throw new Error("Failed to fetch Enrolled customer Data");
 				setCustomer(response.data);
 				activeTab === "CHIT"
 					? setChitCustomerLength(response?.data?.length)
@@ -100,10 +89,10 @@ const ViewCustomers = ({ route, navigation }) => {
 					: setIsGoldLoading(false);
 			}
 		};
-		fetchCustomers();
+		fetchEnrolledCustomers();
 	}, [activeTab, user]);
 
-	const renderCustomerCard = ({ item }) => (
+	const renderEnrolledCustomerCard = ({ item }) => (
 		<TapGestureHandler
 			numberOfTaps={2}
 			onActivated={() => {
@@ -112,24 +101,24 @@ const ViewCustomers = ({ route, navigation }) => {
 		>
 			<View style={styles.card}>
 				<View style={styles.leftSection}>
-					<Text style={styles.name}>{item?.full_name || "No Name"}</Text>
-					<TouchableOpacity onPress={() => sendEmail(item)}>
-						<Text style={styles.groupName}>{item?.email || "No Email"}</Text>
+					<TouchableOpacity onPress={() => openDialer(item)}>
+						<Text style={styles.name}>
+							{item?.user_id?.full_name || "No Name"}
+						</Text>
 					</TouchableOpacity>
+
+					<Text style={styles.groupName}>
+						{item?.group_id?.group_name || "No Group Name"}
+					</Text>
 				</View>
 				<View style={styles.rightSection}>
 					<Text style={styles.schemeType}>
 						{activeTab[0] + activeTab?.slice(1).toLowerCase()}
 					</Text>
-					<TouchableOpacity
-						onPress={() => {
-							openDialer(item);
-						}}
-					>
-						<Text style={styles.phoneNumber}>
-							{item.phone_number || "No Mob Number"}
-						</Text>
-					</TouchableOpacity>
+
+					<Text style={styles.phoneNumber}>
+						{`Ticket Number : ${item?.tickets} `}
+					</Text>
 				</View>
 			</View>
 		</TapGestureHandler>
@@ -154,7 +143,7 @@ const ViewCustomers = ({ route, navigation }) => {
 							}}
 						>
 							<Text style={{ fontWeight: "bold", fontSize: 18 }}>
-								Customers
+								My Customers
 							</Text>
 							<Text style={{ fontWeight: "bold", fontSize: 18 }}>
 								{(chitCustomerLength + goldCustomerLength) | 0}
@@ -201,13 +190,13 @@ const ViewCustomers = ({ route, navigation }) => {
 									/>
 								) : chitCustomerLength === 0 ? (
 									<Text style={styles.noLeadsText}>
-										No Chit Customers found
+										No CHIT enrolled customers found.
 									</Text>
 								) : (
 									<FlatList
 										data={customers}
 										keyExtractor={(item, index) => index.toString()}
-										renderItem={renderCustomerCard}
+										renderItem={renderEnrolledCustomerCard}
 									/>
 								)
 							) : isGoldLoading ? (
@@ -218,19 +207,21 @@ const ViewCustomers = ({ route, navigation }) => {
 									style={{ marginTop: 20 }}
 								/>
 							) : goldCustomerLength === 0 ? (
-								<Text style={styles.noLeadsText}>No gold Customers found</Text>
+								<Text style={styles.noLeadsText}>
+									No GOLD CHIT enrolled customers found.
+								</Text>
 							) : (
 								<FlatList
 									data={customers}
 									keyExtractor={(item, index) => index.toString()}
-									renderItem={renderCustomerCard}
+									renderItem={renderEnrolledCustomerCard}
 								/>
 							)}
 						</View>
 					</View>
 				</View>
 				<TouchableOpacity
-					onPress={() => navigation.navigate("AddCustomer", { user: user })}
+					onPress={() => navigation.navigate("EnrollCustomer", { user: user })}
 					style={{
 						position: "absolute",
 						bottom: 20,
@@ -256,7 +247,7 @@ const ViewCustomers = ({ route, navigation }) => {
 							textAlign: "center",
 						}}
 					>
-						<Feather name="user-plus" size={20} />
+						<Feather name="plus" size={20} />
 					</Text>
 				</TouchableOpacity>
 			</KeyboardAvoidingView>
@@ -383,4 +374,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default ViewCustomers;
+export default ViewEnrollments;

@@ -75,6 +75,15 @@ const AddCustomer = ({ route, navigation }) => {
 			setIsLoading(false);
 			return;
 		}
+		if (customerInfo.phone_number.length > 10) {
+			ToastAndroid.show(
+				"Invalid Phone Number",
+				ToastAndroid.SHORT,
+				ToastAndroid.CENTER
+			);
+			setIsLoading(false);
+			return;
+		}
 
 		try {
 			const data = {
@@ -86,16 +95,12 @@ const AddCustomer = ({ route, navigation }) => {
 				pincode: customerInfo.pincode,
 				adhaar_no: customerInfo.adhaar_no,
 				pan_no: customerInfo?.pan_no,
+				agent: user.userId,
 				// customer_type: selectedTicket === "chit" ? user.userId : receipt.name,
 			};
+			console.log(data, "data");
 			const response = await axios.post(`${baseUrl}/user/add-user`, data);
-			if (response.status === 400) {
-				ToastAndroid.show(
-					"Customer Already Exists!",
-					ToastAndroid.SHORT,
-					ToastAndroid.CENTER
-				);
-			}
+
 			if (response.status === 201) {
 				// Alert.alert("Success", "Customer added successfully!");
 				ToastAndroid.show(
@@ -114,13 +119,11 @@ const AddCustomer = ({ route, navigation }) => {
 					pan_no: "",
 				});
 				setSelectedCustomerType("chit");
-				navigation.navigate("EnrollCustomer", { user: user });
-			} else {
-				console.log("Error:", response.data);
+				navigation.replace("EnrollCustomer", { user: user });
 			}
 		} catch (error) {
-			console.error("Error adding :", error);
-			Alert.alert("Error adding Customer. Please try again.");
+			console.error("Error adding :", error.message);
+			Alert.alert("Error adding Customer", error?.response?.data?.message);
 		} finally {
 			setIsLoading(false);
 		}
@@ -150,7 +153,7 @@ const AddCustomer = ({ route, navigation }) => {
 							<TouchableOpacity
 								onPress={() =>
 									navigation.navigate("Customer", {
-										user: user,
+										user: { ...user },
 									})
 								}
 								style={{
@@ -175,9 +178,10 @@ const AddCustomer = ({ route, navigation }) => {
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter Full Name"
+									value={customerInfo.full_name}
 									keyboardType="default"
 									onChangeText={(value) => {
-										if (value.length > 2) handleInputChange("full_name", value);
+										handleInputChange("full_name", value);
 									}}
 								/>
 								<View style={{ flexDirection: "row" }}>
@@ -187,13 +191,12 @@ const AddCustomer = ({ route, navigation }) => {
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter Email"
+									value={customerInfo.email}
 									keyboardType="email-address"
 									onChangeText={(value) => {
-										if (value.length > 2) {
-											// /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) &&
-											// value.length <= 254
-											handleInputChange("email", value);
-										}
+										// /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) &&
+										// value.length <= 254
+										handleInputChange("email", value);
 									}}
 									phone_number
 								/>
@@ -206,9 +209,9 @@ const AddCustomer = ({ route, navigation }) => {
 									style={styles.textInput}
 									placeholder="Enter Phone Number"
 									keyboardType="number-pad"
+									value={customerInfo.phone_number}
 									onChangeText={(value) => {
-										if (value.length <= 10 && value.length > 0)
-											handleInputChange("phone_number", value);
+										handleInputChange("phone_number", value);
 									}}
 								/>
 								<View style={{ flexDirection: "row" }}>
@@ -218,9 +221,10 @@ const AddCustomer = ({ route, navigation }) => {
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter Password"
+									value={customerInfo.password}
 									keyboardType="number-pad"
 									onChangeText={(value) => {
-										if (value.length >= 4) handleInputChange("password", value);
+										handleInputChange("password", value);
 									}}
 								/>
 								<View style={{ flexDirection: "row" }}>
@@ -231,23 +235,23 @@ const AddCustomer = ({ route, navigation }) => {
 									style={styles.textInput}
 									placeholder="Enter Pincode"
 									keyboardType="number-pad"
+									value={customerInfo.pincode}
 									onChangeText={(value) => {
-										if (value.length > 2) handleInputChange("pincode", value);
+										handleInputChange("pincode", value);
 									}}
 								/>
 								<View style={{ flexDirection: "row" }}>
-									<Text style={{ fontWeight: "bold" }}>Phone Number</Text>
+									<Text style={{ fontWeight: "bold" }}>Adhaar Number</Text>
 									<Text style={{ fontWeight: "bold", color: "red" }}> *</Text>
 								</View>
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter Adhaar Number"
 									keyboardType="number-pad"
+									value={customerInfo.adhaar_no}
 									onChangeText={(value) => {
-										if (value.length > 2) {
-											// /^\d{12}$/.test(value)
-											handleInputChange("adhaar_no", value);
-										}
+										// /^\d{12}$/.test(value)
+										handleInputChange("adhaar_no", value);
 									}}
 								/>
 								<View style={{ flexDirection: "row" }}>
@@ -256,6 +260,7 @@ const AddCustomer = ({ route, navigation }) => {
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter Pan Number"
+									value={customerInfo.pan_no}
 									keyboardType="default"
 									onChangeText={(value) => {
 										handleInputChange("pan_no", value);
@@ -268,9 +273,10 @@ const AddCustomer = ({ route, navigation }) => {
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter Address"
+									value={customerInfo.address}
 									keyboardType="default"
 									onChangeText={(value) => {
-										if (value.length > 2) handleInputChange("address", value);
+										handleInputChange("address", value);
 									}}
 								/>
 								<View style={{ flexDirection: "row" }}>

@@ -306,6 +306,7 @@ const GoldPayin = ({ route, navigation }) => {
 								<Button
 									title={isLoading ? "Please wait..." : "Add Payment"}
 									filled
+									disabled={isLoading}
 									style={{
 										marginTop: 18,
 										marginBottom: 4,

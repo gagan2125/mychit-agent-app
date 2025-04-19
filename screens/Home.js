@@ -25,6 +25,7 @@ const Home = ({ route, navigation }) => {
 				const response = await axios.get(
 					`${baseUrl}/agent/get-agent-by-id/${user.userId}`
 				);
+				console.log(response.data, "this response");
 				if (response.data) {
 					setAgent(response.data);
 				} else {
@@ -88,7 +89,16 @@ const Home = ({ route, navigation }) => {
 						}
 					>
 						<Feather name="users" size={20} color={COLORS.primary} />
-						<Text style={styles.boxText}>Leads</Text>
+						<Text
+							style={{
+								marginTop: 4,
+								fontSize: 12,
+								color: COLORS.black,
+								textAlign: "center",
+							}}
+						>
+							{"My Leads"}
+						</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
 						style={styles.box}
@@ -108,10 +118,32 @@ const Home = ({ route, navigation }) => {
 								textAlign: "center",
 							}}
 						>
-							{"My  Customers"}
+							{"Add  Customers"}
 						</Text>
 					</TouchableOpacity>
-
+					<TouchableOpacity
+						style={styles.box}
+						onPress={() =>
+							navigation.navigate("CustomerNavigation", {
+								screen: "ViewEnrollments",
+								params: { user },
+							})
+						}
+					>
+						<Feather name="user-check" size={20} color={COLORS.primary} />
+						<Text
+							style={{
+								marginTop: 4,
+								fontSize: 12,
+								color: COLORS.black,
+								textAlign: "center",
+							}}
+						>
+							{"My   Customers"}
+						</Text>
+					</TouchableOpacity>
+				</View>
+				<View style={styles.boxContainer}>
 					<TouchableOpacity
 						style={styles.box}
 						onPress={() =>
@@ -123,20 +155,6 @@ const Home = ({ route, navigation }) => {
 					>
 						<Feather name="bar-chart" size={20} color={COLORS.primary} />
 						<Text style={styles.boxText}>Reports</Text>
-					</TouchableOpacity>
-				</View>
-				<View style={styles.boxContainer}>
-					<TouchableOpacity
-						style={styles.box}
-						onPress={() =>
-							navigation.navigate("CustomerNavigation", {
-								screen: "EnrollCustomer",
-								params: { user },
-							})
-						}
-					>
-						<Feather name="user-check" size={20} color={COLORS.primary} />
-						<Text style={styles.boxText}>Enrollment</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
 						style={styles.box}

@@ -90,7 +90,6 @@ const EnrollCustomer = ({ route, navigation }) => {
 		setFormFields({ ...formFields, [field]: value });
 		if (field === "group_id") {
 			try {
-				console.log(baseUrl);
 				const response = await axios.post(
 					`${baseUrl}/enroll/get-next-tickets/${value}`
 				);
@@ -142,6 +141,7 @@ const EnrollCustomer = ({ route, navigation }) => {
 			}));
 		try {
 			for (const ticketEntry of ticketEntries) {
+				ticketEntry.agent = user.userId;
 				await axios.post(`${baseUrl}/enroll/add-enroll`, ticketEntry);
 			}
 			ToastAndroid.show("Customer Enrolled Successfully!", ToastAndroid.SHORT);
@@ -150,6 +150,7 @@ const EnrollCustomer = ({ route, navigation }) => {
 				user_id: "",
 				no_of_tickets: "",
 			});
+			navigation.replace("BottomNavigation", { user: { ...user } });
 		} catch (error) {
 			console.error("Error adding :", error);
 			Alert.alert("Error Enrolling Customer. Please try again.");
@@ -252,6 +253,7 @@ const EnrollCustomer = ({ route, navigation }) => {
 								<TextInput
 									placeholder="Enter Number of Tickets"
 									style={styles.textInput}
+									value={formFields.no_of_tickets}
 									keyboardType="number-pad"
 									onChangeText={(value) =>
 										handleInputChange("no_of_tickets", value)

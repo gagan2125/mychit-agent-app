@@ -6,6 +6,7 @@ import { enableScreens } from "react-native-screens";
 import ViewCustomers from "../screens/ViewCustomer";
 import AddCustomer from "../screens/AddCustomer";
 import EnrollCustomer from "../screens/EnrollCustomer";
+import ViewEnrollments from "../screens/ViewEnrollments";
 
 enableScreens();
 
@@ -28,6 +29,13 @@ const CustomerNavigation = ({ route }) => {
 				initialParams={{ user }}
 				options={{ headerShown: false }}
 			/>
+			<stack.Screen
+				name="ViewEnrollments"
+				component={ViewEnrollments}
+				initialParams={{ user }}
+				options={{ headerShown: false }}
+			/>
+
 			<stack.Screen
 				name="EnrollCustomer"
 				component={EnrollCustomer}
