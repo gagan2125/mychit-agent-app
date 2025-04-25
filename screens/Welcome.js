@@ -14,21 +14,21 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const { width, height } = Dimensions.get("window");
 
 export default function Welcome({ navigation }) {
-	useLayoutEffect(() => {
-		const PreventLogin = async () => {
-			try {
-				const data = await AsyncStorage.getItem("user");
-				if (data) {
-					navigation.replace("BottomNavigation", { user: JSON.parse(data) });
-				} else {
-					throw new Error("User need to login");
-				}
-			} catch (err) {
-				console.log("User Need to Login!");
-			}
-		};
-		PreventLogin();
-	}, []);
+	// useLayoutEffect(() => {
+	// 	const PreventLogin = async () => {
+	// 		try {
+	// 			const data = await AsyncStorage.getItem("user");
+	// 			if (data) {
+	// 				navigation.replace("BottomNavigation", { user: JSON.parse(data) });
+	// 			} else {
+	// 				throw new Error("User need to login");
+	// 			}
+	// 		} catch (err) {
+	// 			console.log("User Need to Login!");
+	// 		}
+	// 	};
+	// 	PreventLogin();
+	// }, []);
 	return (
 		<LinearGradient
 			style={styles.container}

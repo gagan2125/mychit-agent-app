@@ -17,6 +17,7 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import baseUrl from "../constants/baseUrl";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 const { width, height } = Dimensions.get("window");
 
 export default function Login({ navigation }) {
@@ -38,11 +39,16 @@ export default function Login({ navigation }) {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ phone_number: mobile, password: password }),
 			});
-
 			const data = await response.json();
 			if (response.ok) {
-				await AsyncStorage.setItem("user", JSON.stringify(data));
-				navigation.navigate("BottomNavigation", { user: data });
+				// await AsyncStorage.setItem("user", JSON.stringify(data));
+				const agentDetail = await axios.get(
+					`${baseUrl}/agent/get-agent-by-id/${data.userId}`
+				);
+				navigation.navigate("BottomNavigation", {
+					user: data,
+					agentInfo: agentDetail?.data,
+				});
 			} else {
 				Alert.alert("Login Failed", data.message || "Invalid credentials.");
 			}

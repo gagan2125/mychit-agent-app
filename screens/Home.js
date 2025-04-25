@@ -16,7 +16,7 @@ import baseUrl from "../constants/baseUrl";
 import axios from "axios";
 
 const Home = ({ route, navigation }) => {
-	const { user } = route.params;
+	const { user, agentInfo } = route.params;
 	const [agent, setAgent] = useState([]);
 
 	useEffect(() => {
@@ -25,7 +25,7 @@ const Home = ({ route, navigation }) => {
 				const response = await axios.get(
 					`${baseUrl}/agent/get-agent-by-id/${user.userId}`
 				);
-				console.log(response.data, "this response");
+
 				if (response.data) {
 					setAgent(response.data);
 				} else {
@@ -34,6 +34,7 @@ const Home = ({ route, navigation }) => {
 			} catch (error) {
 				console.error("Error fetching agent data:", error);
 			}
+			console.log(response.data, "user");
 		};
 
 		fetchAgent();
@@ -54,52 +55,62 @@ const Home = ({ route, navigation }) => {
 					</View>
 				</ScrollView>
 				<View style={styles.boxContainer}>
-					<TouchableOpacity
-						style={styles.box}
-						onPress={() => navigation.navigate("PaymentNavigator")}
-					>
-						<Feather name="user" size={20} color={COLORS.primary} />
-						<Text style={styles.boxText}>Collections</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.box}
-						onPress={() => navigation.navigate("PayNavigation", { user: user })}
-					>
-						<Feather name="file" size={20} color={COLORS.primary} />
-						<Text style={styles.boxText}>Daybook</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.box}
-						onPress={() =>
-							Alert.alert("Coming Soon", "This feature is coming soon!")
-						}
-					>
-						<Feather name="check-circle" size={20} color={COLORS.primary} />
-						<Text style={styles.boxText}>Targets</Text>
-					</TouchableOpacity>
+					{agentInfo?.app_permission?.collection === "true" && (
+						<TouchableOpacity
+							style={styles.box}
+							onPress={() => navigation.navigate("PaymentNavigator")}
+						>
+							<Feather name="user" size={20} color={COLORS.primary} />
+							<Text style={styles.boxText}>Collections</Text>
+						</TouchableOpacity>
+					)}
+					{agentInfo?.app_permission?.daybook === "true" && (
+						<TouchableOpacity
+							style={styles.box}
+							onPress={() =>
+								navigation.navigate("PayNavigation", { user: user })
+							}
+						>
+							<Feather name="file" size={20} color={COLORS.primary} />
+							<Text style={styles.boxText}>Daybook</Text>
+						</TouchableOpacity>
+					)}
+					{agentInfo?.app_permission?.targets === "true" && (
+						<TouchableOpacity
+							style={styles.box}
+							onPress={() =>
+								Alert.alert("Coming Soon", "This feature is coming soon!")
+							}
+						>
+							<Feather name="check-circle" size={20} color={COLORS.primary} />
+							<Text style={styles.boxText}>Targets</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 				<View style={styles.boxContainer}>
-					<TouchableOpacity
-						style={styles.box}
-						onPress={() =>
-							navigation.navigate("PayNavigation", {
-								screen: "ViewLeads",
-								params: { user: user },
-							})
-						}
-					>
-						<Feather name="users" size={20} color={COLORS.primary} />
-						<Text
-							style={{
-								marginTop: 4,
-								fontSize: 12,
-								color: COLORS.black,
-								textAlign: "center",
-							}}
+					{agentInfo?.app_permission?.myleads === "true" && (
+						<TouchableOpacity
+							style={styles.box}
+							onPress={() =>
+								navigation.navigate("PayNavigation", {
+									screen: "ViewLeads",
+									params: { user: user },
+								})
+							}
 						>
-							{"My Leads"}
-						</Text>
-					</TouchableOpacity>
+							<Feather name="users" size={20} color={COLORS.primary} />
+							<Text
+								style={{
+									marginTop: 4,
+									fontSize: 12,
+									color: COLORS.black,
+									textAlign: "center",
+								}}
+							>
+								{"My Leads"}
+							</Text>
+						</TouchableOpacity>
+					)}
 					<TouchableOpacity
 						style={styles.box}
 						onPress={() =>
@@ -144,25 +155,29 @@ const Home = ({ route, navigation }) => {
 					</TouchableOpacity>
 				</View>
 				<View style={styles.boxContainer}>
-					<TouchableOpacity
-						style={styles.box}
-						onPress={() =>
-							navigation.navigate("PayNavigation", {
-								screen: "Reports",
-								params: { user: user },
-							})
-						}
-					>
-						<Feather name="bar-chart" size={20} color={COLORS.primary} />
-						<Text style={styles.boxText}>Reports</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.box}
-						onPress={() => Alert.alert("Coming soon...")}
-					>
-						<Feather name="command" size={20} color={COLORS.primary} />
-						<Text style={styles.boxText}>Commission</Text>
-					</TouchableOpacity>
+					{agentInfo?.app_permission?.reports === "true" && (
+						<TouchableOpacity
+							style={styles.box}
+							onPress={() =>
+								navigation.navigate("PayNavigation", {
+									screen: "Reports",
+									params: { user: user },
+								})
+							}
+						>
+							<Feather name="bar-chart" size={20} color={COLORS.primary} />
+							<Text style={styles.boxText}>Reports</Text>
+						</TouchableOpacity>
+					)}
+					{agentInfo?.app_permission?.commission === "true" && (
+						<TouchableOpacity
+							style={styles.box}
+							onPress={() => Alert.alert("Coming soon...")}
+						>
+							<Feather name="command" size={20} color={COLORS.primary} />
+							<Text style={styles.boxText}>Commission</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 				<View style={styles.stock_container}>
 					{/* <Text style={styles.stock_title}>My Tasks</Text> */}
