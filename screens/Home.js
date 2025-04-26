@@ -88,7 +88,7 @@ const Home = ({ route, navigation }) => {
 					)}
 				</View>
 				<View style={styles.boxContainer}>
-					{agentInfo?.app_permission?.myleads === "true" && (
+					{agentInfo?.app_permission?.leads === "true" && (
 						<TouchableOpacity
 							style={styles.box}
 							onPress={() =>
