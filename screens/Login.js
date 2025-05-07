@@ -34,9 +34,11 @@ export default function Login({ navigation }) {
       return;
     }
     try {
+      const cleanedPassword = password.replace(/\s/g, "");
       const response = await fetch(`${baseUrl}/agent/login-agent`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+
         body: JSON.stringify({ phone_number: mobile, password: password }),
       });
       const data = await response.json();

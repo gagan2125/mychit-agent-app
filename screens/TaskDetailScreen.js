@@ -16,7 +16,7 @@ export default function TaskDetailScreen({ navigation, route }) {
           <Button
             title="Mark as Complete"
             onPress={() => navigation.navigate('CompleteTask', { taskId: task._id })}
-            color="#4e5ae8"
+           color="black"
           />
         </View>
       </View>
