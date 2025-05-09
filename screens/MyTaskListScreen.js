@@ -7,10 +7,14 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import axios from "axios";
 import COLORS from "../constants/color";
 import baseUrl from "../constants/baseUrl";
+import Header from "../components/Header";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MyTaskListScreen({ navigation, route }) {
   const [tasks, setTasks] = useState([]);
@@ -47,7 +51,14 @@ export default function MyTaskListScreen({ navigation, route }) {
   );
 
   return (
+    <SafeAreaView style={{ flex: 1, }}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+          >
     <View style={styles.container}>
+      <Header />
       <Text style={styles.header}>My Tasks</Text>
       {loading ? (
         <ActivityIndicator size="large" color={COLORS.primary} />
@@ -59,6 +70,8 @@ export default function MyTaskListScreen({ navigation, route }) {
         />
       )}
     </View>
+    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -66,13 +79,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
   },
   header: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: "700",
     marginBottom: 15,
-    color: COLORS.primary,
+    marginLeft:9,
+    color: "#111",
   },
   card: {
     // backgroundColor: "#fff",

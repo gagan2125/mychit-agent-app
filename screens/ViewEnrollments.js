@@ -117,7 +117,7 @@ const ViewEnrollments = ({ route, navigation }) => {
 					</Text>
 
 					<Text style={styles.phoneNumber}>
-						{`Ticket Number : ${item?.tickets} `}
+						{`TNo : ${item?.tickets} `}
 					</Text>
 				</View>
 			</View>

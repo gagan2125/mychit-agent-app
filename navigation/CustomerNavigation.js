@@ -7,6 +7,7 @@ import ViewCustomers from "../screens/ViewCustomer";
 import AddCustomer from "../screens/AddCustomer";
 import EnrollCustomer from "../screens/EnrollCustomer";
 import ViewEnrollments from "../screens/ViewEnrollments";
+import Commissions from "../screens/Commissions";
 
 enableScreens();
 
@@ -39,6 +40,12 @@ const CustomerNavigation = ({ route }) => {
 			<stack.Screen
 				name="EnrollCustomer"
 				component={EnrollCustomer}
+				initialParams={{ user }}
+				options={{ headerShown: false }}
+			/>
+			<stack.Screen
+				name="Commissions"
+				component={Commissions}
 				initialParams={{ user }}
 				options={{ headerShown: false }}
 			/>

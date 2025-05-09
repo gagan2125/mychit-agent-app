@@ -157,21 +157,20 @@ const Home = ({ route, navigation }) => {
         </View>
 
         <View style={styles.boxContainer}>
-          <TouchableOpacity
-            style={styles.box}
-            onPress={() =>
-              navigation.navigate("MyTasks", {
-                employeeId: user.userId,
-                agentName: agent.name,
-              })
-            }
-          >
-            <Feather name="list" size={20} color={COLORS.primary} />
-            <Text style={styles.boxText}>My Tasks</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.boxContainer}>
+          <View >
+            <TouchableOpacity
+              style={styles.box}
+              onPress={() =>
+                navigation.navigate("MyTasks", {
+                  employeeId: user.userId,
+                  agentName: agent.name,
+                })
+              }
+            >
+              <Feather name="list" size={20} color={COLORS.primary} />
+              <Text style={styles.boxText}>My Tasks</Text>
+            </TouchableOpacity>
+          </View>
           {agentInfo?.designation_id.permission?.reports === "true" && (
             <TouchableOpacity
               style={styles.box}
@@ -189,7 +188,10 @@ const Home = ({ route, navigation }) => {
           {agentInfo?.designation_id.permission?.commission === "true" && (
             <TouchableOpacity
               style={styles.box}
-              onPress={() => Alert.alert("Coming soon...")}
+              onPress={() => navigation.navigate("CustomerNavigation", {
+                screen: "Commissions",
+                params: { user: user },
+              })}
             >
               <Feather name="command" size={20} color={COLORS.primary} />
               <Text style={styles.boxText}>Commission</Text>
