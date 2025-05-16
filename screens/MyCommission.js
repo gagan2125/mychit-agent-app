@@ -1,103 +1,54 @@
 import {
     View,
     Text,
+    FlatList,
     StyleSheet,
     KeyboardAvoidingView,
     Platform,
+    ScrollView,
     TouchableOpacity,
     ActivityIndicator,
-    
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import axios from "axios";
 import COLORS from "../constants/color";
 import Header from "../components/Header";
-import baseUrl from "../constants/baseUrl";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { ScrollView } from "react-native-gesture-handler";
-
-const Commissions = ({ route, navigation }) => {
-    const { user } = route.params;
-    const [chitCommissionLength, setChitCommissionLength] = useState(0);
-    const [goldCommissionLength, setGoldCommissionLength] = useState(0);
+const MyCommission = ({ route, navigation }) => {
+    const { commissions } = route.params;
+    const [goldLeads, setGoldLeads] = useState([]);
     const [isChitLoading, setIsChitLoading] = useState(false);
     const [isGoldLoading, setIsGoldLoading] = useState(false);
-    const [commissions, setCommissions] = useState([]);
     const [activeTab, setActiveTab] = useState("CHIT");
- const handleEstimatedCommission = ()=>{
-    navigation.navigate("ExpectedCommissions", { user: user })
- }
- const handleMyCommission = ()=>{
-    navigation.navigate("MyCommissions", { commissions: commissions })
- }
- const handleMyCustomers = ()=>{
-    navigation.navigate("ViewEnrollments", { user: user })
-
- }
- const handleGroups = ()=>{
-    navigation.navigate("MyGroups", { user: user })
-
- }
-    const scrollData = [
-        { title: "Customers", icon: "person", value: "total_customers" ,key:"#1",handlePress:handleMyCustomers}, 
-        { title: "Groups", icon: "group", value: "total_groups",key:"#2" ,handlePress:handleGroups}, 
-        { title: "My Business", icon: "query-stats", value: "actual_business" ,key:"#6",handlePress:handleMyCommission},
-        { title: "Estimated Business", icon: "trending-up", value: "expected_business" ,key:"#5",handlePress:handleEstimatedCommission},
-        { title: "My Commission", icon: "payments", value: "total_actual",key:"#4" ,handlePress:handleMyCommission},
-        { title: "Estimated Commission", icon: "currency-rupee", value: "total_estimated",key:"#3" ,handlePress:handleEstimatedCommission}]
     useEffect(() => {
-        const fetchCommissions = async () => {
-            const currentUrl =
-                activeTab === "CHIT" ? `${baseUrl}` : "http://13.60.68.201:3000/api";
-            try {
-                activeTab === "CHIT" ? setIsChitLoading(true) : setIsGoldLoading(true);
-                const response = await axios.get(
-                    `${currentUrl}/enroll/get-detailed-commission/${user.userId}`
-                );
-                if (response.status >= 400)
-                    throw new Error("Failed to fetch Customer Data");
-                setCommissions(response.data);
-                activeTab === "CHIT"
-                    ? setChitCommissionLength(response?.data?.length)
-                    : setGoldCommissionLength(response?.data?.length);
-            } catch (err) {
-                console.log(err, "error");
-                setCommissions([]);
-            } finally {
-                activeTab === "CHIT"
-                    ? setIsChitLoading(false)
-                    : setIsGoldLoading(false);
-            }
-        };
-        fetchCommissions();
-    }, [activeTab, user]);
+        console.log(commissions.commission_data, "commission data")
+        if (commissions.commission_data) {
+            setIsChitLoading(false)
+        }
 
-    const renderCommissionCard = (commissionData) => (<ScrollView>
-        {scrollData.map(({ title, icon, value,key,handlePress }) => (<TouchableOpacity key={key} activeOpacity={0.8} onPress={handlePress}>
-            <View style={[styles.card, { backgroundColor: "#FDFDFD" }]} >
-                <View style={[styles.leftSection]} >
-                    <View style={{ borderRadius: 10, justifyContent: "center", alignItems: "center" }}>
-                        <MaterialIcons name={icon} size={20} style={{ color: COLORS.primary }} />
-                        <Text style={{ fontWeight: "bold", color: COLORS.primary, textAlign: "center",fontSize:12 }}>
-                            {title}
-                        </Text>
-                    </View>
-                </View>
-                <View style={{ flex: 1 }}>
-                </View>
-                <View style={{ flex: 1 }}>
-                </View>
-                <View style={styles.rightSection}>
-                    <Text style={[ { color: COLORS.primary ,fontWeight:"bold",fontSize:12}]}>
-                        {commissionData?.summary?.[value]}
+    }, [activeTab])
+    const renderCommissionCard = ({ item }) => {
+
+        return (
+            <View style={styles.card}>
+                <View style={styles.leftSection}>
+                    <Text style={styles.name}>{item?.user_name}</Text>
+                    <Text style={styles.groupName}>
+                        {item?.group_name ? item.group_name: "No Group Name"}
+                    </Text>
+                    <Text style={styles.groupName}>
+                        {item?.group_value ? item.group_value: "No Group Value"}
                     </Text>
                 </View>
+                <View style={styles.rightSection}>
+                    <Text style={styles.schemeType}>
+                        {item?.commission_rate}
+                    </Text>
+                    <Text style={styles.phoneNumber}>{item?.actual_commission}</Text>
+                    <Text style={styles.phoneNumber}>{item?.commission_released}</Text>
+                </View>
             </View>
-        </TouchableOpacity>
-        )
-
-        )}</ScrollView>)
+        );
+    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -117,10 +68,10 @@ const Commissions = ({ route, navigation }) => {
                                 justifyContent: "space-between",
                             }}
                         >
+                            <Text style={{ fontWeight: "bold", fontSize: 18 }}>My Commission</Text>
                             <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-                                Commissions
+                                {commissions?.summary?.total_estimated || 0}
                             </Text>
-
                         </View>
 
                         <View style={styles.container}>
@@ -161,28 +112,63 @@ const Commissions = ({ route, navigation }) => {
                                         color="#000"
                                         style={{ marginTop: 20 }}
                                     />
-                                ) : chitCommissionLength === 0 ? (
-                                    <Text style={styles.noLeadsText}>
-                                        No Chit Customers found
-                                    </Text>
+                                ) : !(commissions?.success) ? (
+                                    <Text style={styles.noLeadsText}>No Commission Data Found</Text>
                                 ) : (
-                                    renderCommissionCard(commissions)
+
+                                    <FlatList
+                                        data={commissions?.commission_data || []}
+                                        keyExtractor={(item, index) => index.toString()}
+                                        renderItem={renderCommissionCard}
+                                        ListHeaderComponent={() => (<View style={styles.colorCard}>
+                                            <View style={styles.containerNew} >
+                                                <Text style={styles.colorContainerText}>
+                                                Total Customers  {commissions?.summary?.total_customers}
+                                               
+                                                </Text>
+                                            </View>
+                                            <View style={styles.containerNew}>
+                                                <Text style={styles.colorContainerText}>
+                                                    Total Groups {commissions?.summary?.total_groups}
+                                                </Text>
+                                                
+                                            </View>
+                                            <View style={styles.containerNew}>
+                                                <Text style={styles.colorContainerText}>
+                                               
+                                               My Business {commissions?.summary?.actual_business}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.containerNew}>
+                                                <Text style={styles.colorContainerText}>
+                                                My Commission   {commissions?.summary?.total_actual}
+                                                
+                                                </Text>
+                                            </View>
+
+                                        </View>)}
+                                    />
+
+
+
 
                                 )
                             ) : isGoldLoading ? (
                                 <ActivityIndicator
                                     size="large"
                                     color="#000"
-                                    Chits
                                     style={{ marginTop: 20 }}
                                 />
-                            ) : goldCommissionLength === 0 ? (
-                                <Text style={styles.noLeadsText}>No gold Commission found</Text>
+                            ) : goldLeads.length === 0 ? (
+                                <Text style={styles.noLeadsText}>No commission Data Found</Text>
                             ) : (
-
-
-                                renderCommissionCard(commissions)
+                                <FlatList
+                                    data={commissions?.commission_data || []}
+                                    keyExtractor={(item, index) => index.toString()}
+                                    renderItem={renderCommissionCard}
+                                />
                             )}
+
                         </View>
                     </View>
                 </View>
@@ -247,8 +233,6 @@ const styles = StyleSheet.create({
     tab: {
         flex: 1,
         paddingVertical: 10,
-        justifyContent: "center",
-
         alignItems: "center",
         borderBottomWidth: 1,
         borderBottomColor: "transparent",
@@ -261,7 +245,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#666",
         fontWeight: "500",
-        textAlign: "center",
     },
     activeTabText: {
         color: COLORS.primary,
@@ -275,11 +258,26 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         elevation: 2,
     },
+    containerNew:{
+        flexDirection:"row",
+        justifyContent:"center"
+    },
+    colorContainerText:{
+        fontWeight:"bold",
+            },
+    colorCard: {
+        backgroundColor: "#FEF3E2",
+        flexDirection: "column",
+        padding: 15,
+        marginHorizontal: 5,
+        marginVertical: 5,
+        borderRadius: 8,
+        elevation: 2,
+    },
     leftSection: {
         flex: 1,
     },
     rightSection: {
-        justifyContent:"center",
         alignItems: "flex-end",
     },
     name: {
@@ -310,24 +308,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#666",
     },
-    box: {
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: COLORS.white,
-        borderRadius: 10,
-        width: 80,
-        height: 80,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 1.84,
-        elevation: 2,
-    },
-    boxText: {
-        marginTop: 10,
-        fontSize: 12,
-        color: COLORS.black,
-    },
 });
 
-export default Commissions;
+export default MyCommission;

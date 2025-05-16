@@ -1,103 +1,149 @@
 import {
     View,
     Text,
+    FlatList,
     StyleSheet,
     KeyboardAvoidingView,
     Platform,
     TouchableOpacity,
     ActivityIndicator,
-    
+    Linking,
+    Alert,
+    Pressable,
 } from "react-native";
+import { TapGestureHandler } from "react-native-gesture-handler";
 import React, { useState, useEffect, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import COLORS from "../constants/color";
 import Header from "../components/Header";
 import baseUrl from "../constants/baseUrl";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { ScrollView } from "react-native-gesture-handler";
+import { Feather } from "@expo/vector-icons";
+import { whatsappMessage } from "../components/data/messages";
 
-const Commissions = ({ route, navigation }) => {
+const ExpectedCommissions = ({ route, navigation }) => {
     const { user } = route.params;
-    const [chitCommissionLength, setChitCommissionLength] = useState(0);
-    const [goldCommissionLength, setGoldCommissionLength] = useState(0);
+    const [chitCustomerLength, setChitCustomerLength] = useState(0);
+    const [goldCustomerLength, setGoldCustomerLength] = useState(0);
     const [isChitLoading, setIsChitLoading] = useState(false);
     const [isGoldLoading, setIsGoldLoading] = useState(false);
-    const [commissions, setCommissions] = useState([]);
+    const [customers, setCustomer] = useState([]);
     const [activeTab, setActiveTab] = useState("CHIT");
- const handleEstimatedCommission = ()=>{
-    navigation.navigate("ExpectedCommissions", { user: user })
- }
- const handleMyCommission = ()=>{
-    navigation.navigate("MyCommissions", { commissions: commissions })
- }
- const handleMyCustomers = ()=>{
-    navigation.navigate("ViewEnrollments", { user: user })
+    const [totalChitCommmissions, setTotalChitCommissions] = useState("")
+    const [totalGoldCommmissions, setTotalGoldCommissions] = useState("")
+    const sendWhatsappMessage = async (item) => {
+        if (item.user_id?.phone_number) {
+            let url = `whatsapp://send?phone=${item.user_id?.phone_number
+                }&text=${encodeURIComponent(whatsappMessage)}`;
 
- }
- const handleGroups = ()=>{
-    navigation.navigate("MyGroups", { user: user })
+            Linking.canOpenURL(url)
+                .then((supported) => {
+                    if (supported) {
+                        return Linking.openURL(url);
+                    } else {
+                        Alert.alert("WhatsApp is not installed");
+                    }
+                })
+                .catch((err) => console.error("An error occurred", err));
+        } else {
+            return;
+        }
+    };
+    const openDialer = (item) => {
+        if (item?.user_id?.phone_number) {
+            Linking.canOpenURL(`tel:${item.user_id.phone_number}`)
+                .then((supported) => {
+                    if (supported) {
+                        Linking.openURL(`tel:${item.user_id.phone_number}`);
+                    }
+                })
+                .catch((err) => {
+                    Alert.alert("Somthing went wrong!");
+                });
+        } else {
+            return;
+        }
+    };
 
- }
-    const scrollData = [
-        { title: "Customers", icon: "person", value: "total_customers" ,key:"#1",handlePress:handleMyCustomers}, 
-        { title: "Groups", icon: "group", value: "total_groups",key:"#2" ,handlePress:handleGroups}, 
-        { title: "My Business", icon: "query-stats", value: "actual_business" ,key:"#6",handlePress:handleMyCommission},
-        { title: "Estimated Business", icon: "trending-up", value: "expected_business" ,key:"#5",handlePress:handleEstimatedCommission},
-        { title: "My Commission", icon: "payments", value: "total_actual",key:"#4" ,handlePress:handleMyCommission},
-        { title: "Estimated Commission", icon: "currency-rupee", value: "total_estimated",key:"#3" ,handlePress:handleEstimatedCommission}]
     useEffect(() => {
-        const fetchCommissions = async () => {
+        const fetchEnrolledCustomers = async () => {
             const currentUrl =
                 activeTab === "CHIT" ? `${baseUrl}` : "http://13.60.68.201:3000/api";
             try {
                 activeTab === "CHIT" ? setIsChitLoading(true) : setIsGoldLoading(true);
                 const response = await axios.get(
-                    `${currentUrl}/enroll/get-detailed-commission/${user.userId}`
+                    `${currentUrl}/enroll/get-commission-info/${user.userId}`
                 );
+
                 if (response.status >= 400)
-                    throw new Error("Failed to fetch Customer Data");
-                setCommissions(response.data);
+                    throw new Error("Failed to fetch Enrolled customer Data");
+                setCustomer(response.data.dataWithCommission);
+                setTotalChitCommissions(response?.data?.total_commission);
+
                 activeTab === "CHIT"
-                    ? setChitCommissionLength(response?.data?.length)
-                    : setGoldCommissionLength(response?.data?.length);
+                    ? setChitCustomerLength(response?.data?.dataWithCommission.length)
+                    : setGoldCustomerLength(response?.data?.length);
             } catch (err) {
                 console.log(err, "error");
-                setCommissions([]);
+                setCustomer([]);
             } finally {
                 activeTab === "CHIT"
                     ? setIsChitLoading(false)
                     : setIsGoldLoading(false);
             }
         };
-        fetchCommissions();
+        fetchEnrolledCustomers();
     }, [activeTab, user]);
 
-    const renderCommissionCard = (commissionData) => (<ScrollView>
-        {scrollData.map(({ title, icon, value,key,handlePress }) => (<TouchableOpacity key={key} activeOpacity={0.8} onPress={handlePress}>
-            <View style={[styles.card, { backgroundColor: "#FDFDFD" }]} >
-                <View style={[styles.leftSection]} >
-                    <View style={{ borderRadius: 10, justifyContent: "center", alignItems: "center" }}>
-                        <MaterialIcons name={icon} size={20} style={{ color: COLORS.primary }} />
-                        <Text style={{ fontWeight: "bold", color: COLORS.primary, textAlign: "center",fontSize:12 }}>
-                            {title}
+    const renderEnrolledCustomerCard = ({ item }) => (
+        <TapGestureHandler
+            numberOfTaps={2}
+            onActivated={() => {
+                sendWhatsappMessage(item);
+            }}
+        >
+            <View style={styles.card}>
+                <View style={styles.leftSection}>
+                    <TouchableOpacity onPress={() => openDialer(item)}>
+                        <Text style={styles.name}>
+                            {item?.user_id?.full_name || "No Name"}
                         </Text>
-                    </View>
-                </View>
-                <View style={{ flex: 1 }}>
-                </View>
-                <View style={{ flex: 1 }}>
-                </View>
-                <View style={styles.rightSection}>
-                    <Text style={[ { color: COLORS.primary ,fontWeight:"bold",fontSize:12}]}>
-                        {commissionData?.summary?.[value]}
+                    </TouchableOpacity>
+
+                    <Text style={styles.groupName}>
+                        {item?.group_id?.group_name || "No Group Name"}
+                    </Text>
+                    <Text style={[styles.groupName]}>
+                        {item?.group_id?.group_value.toLocaleString('en-IN', {
+                            maximumFractionDigits: 2,
+                            style: 'currency',
+                            currency: 'INR'
+                        }) || "No Commission"}
+
+                    </Text>
+                    <Text style={[styles.groupName, { color: COLORS.primary, fontWeight: "bold" }]}>
+                        {item?.group_id?.commission || "No Commission"}
+                        {item?.group_id?.commission && "%"}
                     </Text>
                 </View>
-            </View>
-        </TouchableOpacity>
-        )
+                <View style={styles.rightSection}>
+                    <Text style={styles.schemeType}>
+                        {activeTab[0] + activeTab?.slice(1).toLowerCase()}
+                    </Text>
 
-        )}</ScrollView>)
+                    <Text style={styles.phoneNumber}>
+                        {`TNo : ${item?.tickets} `}
+                    </Text>
+                    <Text style={[styles.groupName, { color: "green", fontWeight: "bold" }]}>
+                        {item?.calculated_commission || "No Commission"}
+
+                    </Text>
+                </View>
+
+            </View>
+
+        </TapGestureHandler>
+    );
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -118,9 +164,11 @@ const Commissions = ({ route, navigation }) => {
                             }}
                         >
                             <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-                                Commissions
+                                Expected Commission
                             </Text>
-
+                            <Text style={{ fontWeight: "bold", fontSize: 18, color: "green" }}>
+                                {totalChitCommmissions || 0}
+                            </Text>
                         </View>
 
                         <View style={styles.container}>
@@ -135,7 +183,7 @@ const Commissions = ({ route, navigation }) => {
                                             activeTab === "CHIT" && styles.activeTabText,
                                         ]}
                                     >
-                                        Chits
+                                        Chits {chitCustomerLength || 0}
                                     </Text>
                                 </TouchableOpacity>
 
@@ -149,7 +197,7 @@ const Commissions = ({ route, navigation }) => {
                                             activeTab === "GOLD" && styles.activeTabText,
                                         ]}
                                     >
-                                        Gold Chits
+                                        Gold Chits {goldCustomerLength || 0}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -161,13 +209,16 @@ const Commissions = ({ route, navigation }) => {
                                         color="#000"
                                         style={{ marginTop: 20 }}
                                     />
-                                ) : chitCommissionLength === 0 ? (
+                                ) : chitCustomerLength === 0 ? (
                                     <Text style={styles.noLeadsText}>
-                                        No Chit Customers found
+                                        No CHIT enrolled customers found.
                                     </Text>
                                 ) : (
-                                    renderCommissionCard(commissions)
-
+                                    <FlatList
+                                        data={customers}
+                                        keyExtractor={(item, index) => index.toString()}
+                                        renderItem={renderEnrolledCustomerCard}
+                                    />
                                 )
                             ) : isGoldLoading ? (
                                 <ActivityIndicator
@@ -176,17 +227,50 @@ const Commissions = ({ route, navigation }) => {
                                     Chits
                                     style={{ marginTop: 20 }}
                                 />
-                            ) : goldCommissionLength === 0 ? (
-                                <Text style={styles.noLeadsText}>No gold Commission found</Text>
+                            ) : goldCustomerLength === 0 ? (
+                                <Text style={styles.noLeadsText}>
+                                    No GOLD CHIT enrolled customers found.
+                                </Text>
                             ) : (
-
-
-                                renderCommissionCard(commissions)
+                                <FlatList
+                                    data={customers}
+                                    keyExtractor={(item, index) => index.toString()}
+                                    renderItem={renderEnrolledCustomerCard}
+                                />
                             )}
                         </View>
                     </View>
                 </View>
-
+                {/* <TouchableOpacity
+                    onPress={() => Alert.alert("Total Commission Earned",totalChitCommmissions)}
+                    style={{
+                        position: "absolute",
+                        bottom: 20,
+                        right: 20,
+                        backgroundColor: COLORS.primary,
+                        borderRadius: 30,
+                        width: 60,
+                        height: 60,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        elevation: 5,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 3,
+                    }}
+                >
+                    <Text
+                        style={{
+                            color: "white",
+                            fontSize: 12,
+                            fontWeight: "bold",
+                            textAlign: "center",
+                        }}
+                    >
+                        <Feather name="eye" size={20} />
+                    </Text>
+                </TouchableOpacity> */}
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
@@ -279,7 +363,6 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     rightSection: {
-        justifyContent:"center",
         alignItems: "flex-end",
     },
     name: {
@@ -310,24 +393,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#666",
     },
-    box: {
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: COLORS.white,
-        borderRadius: 10,
-        width: 80,
-        height: 80,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 1.84,
-        elevation: 2,
-    },
-    boxText: {
-        marginTop: 10,
-        fontSize: 12,
-        color: COLORS.black,
-    },
 });
 
-export default Commissions;
+export default ExpectedCommissions;
