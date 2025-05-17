@@ -27,6 +27,7 @@ const MyCommission = ({ route, navigation }) => {
 
     }, [activeTab])
     const renderCommissionCard = ({ item }) => {
+        if(item.commission_released === false) return;
 
         return (
             <View style={styles.card}>
@@ -44,8 +45,9 @@ const MyCommission = ({ route, navigation }) => {
                         {item?.commission_rate}
                     </Text>
                     <Text style={styles.phoneNumber}>{item?.actual_commission}</Text>
-                    <Text style={styles.phoneNumber}>{item?.commission_released}</Text>
+                    <Text style={styles.phoneNumber}>TNo:{item?.ticket_number}</Text>
                 </View>
+               
             </View>
         );
     }
@@ -70,7 +72,7 @@ const MyCommission = ({ route, navigation }) => {
                         >
                             <Text style={{ fontWeight: "bold", fontSize: 18 }}>My Commission</Text>
                             <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-                                {commissions?.summary?.total_estimated || 0}
+                                {commissions?.summary?.total_actual || 0}
                             </Text>
                         </View>
 
@@ -142,7 +144,6 @@ const MyCommission = ({ route, navigation }) => {
                                             <View style={styles.containerNew}>
                                                 <Text style={styles.colorContainerText}>
                                                 My Commission   {commissions?.summary?.total_actual}
-                                                
                                                 </Text>
                                             </View>
 
