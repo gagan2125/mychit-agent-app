@@ -83,7 +83,7 @@ export default function Login({ navigation }) {
           <TextInput
             style={styles.input}
             placeholder="eg. 8765349076"
-            placeholderTextColor={COLORS.black}
+            placeholderTextColor="#A9A9A9"
             keyboardType="numeric"
             value={mobile}
             onChangeText={setMobile}
@@ -96,7 +96,7 @@ export default function Login({ navigation }) {
             <TextInput
               style={styles.passwordInput}
               placeholder="***************"
-              placeholderTextColor={COLORS.black}
+              placeholderTextColor="#A9A9A9"
               secureTextEntry={!isPasswordShown}
               value={password}
               onChangeText={setPassword}
@@ -114,9 +114,13 @@ export default function Login({ navigation }) {
           </View>
         </View>
 
-        <Pressable style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
-        </Pressable>
+       <TouchableOpacity
+  style={styles.button}
+  onPress={handleLogin}
+  activeOpacity={0.7} 
+>
+  <Text style={styles.buttonText}>Login</Text>
+</TouchableOpacity>
 
         <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
           <Text

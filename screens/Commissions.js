@@ -163,7 +163,7 @@ const Commissions = ({ route, navigation }) => {
                                     />
                                 ) : chitCommissionLength === 0 ? (
                                     <Text style={styles.noLeadsText}>
-                                        No Chit Customers found
+                                        No Chit Commission Found
                                     </Text>
                                 ) : (
                                     renderCommissionCard(commissions)
@@ -177,7 +177,7 @@ const Commissions = ({ route, navigation }) => {
                                     style={{ marginTop: 20 }}
                                 />
                             ) : goldCommissionLength === 0 ? (
-                                <Text style={styles.noLeadsText}>No gold Commission found</Text>
+                                <Text style={styles.noLeadsText}>No Gold Commission Found</Text>
                             ) : (
 
 

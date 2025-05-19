@@ -149,6 +149,19 @@ const GoldPayin = ({ route, navigation }) => {
 	const handleAddPayment = async () => {
 		setIsLoading(true);
 		try {
+			// Validate required fields before submission
+			if (
+				!selectedGroup ||
+				!selectedTicket ||
+				!paymentDetails ||
+				!amount ||
+				(paymentDetails !== "cash" && !transactionId)
+			) {
+				Alert.alert("Validation Error", "Please fill all mandatory fields.");
+				setIsLoading(false);
+				return;
+			}
+
 			const data = {
 				user_id: customer,
 				group_id: selectedGroup,
@@ -196,7 +209,10 @@ const GoldPayin = ({ route, navigation }) => {
 						</View>
 						<View style={styles.container}>
 							<View style={styles.contentContainer}>
-								<Text style={{ fontWeight: "bold" }}>Name</Text>
+								<Text style={{ fontWeight: "bold" }}>
+									Name
+									<Text style={{ color: "red" }}> *</Text>
+								</Text>
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter The Name"
@@ -204,7 +220,10 @@ const GoldPayin = ({ route, navigation }) => {
 									value={customerInfo.full_name}
 									editable={false}
 								/>
-								<Text style={{ fontWeight: "bold", marginTop: 10 }}>Group</Text>
+								<Text style={{ fontWeight: "bold", marginTop: 10 }}>
+									Group
+									<Text style={{ color: "red" }}> *</Text>
+								</Text>
 								<View style={styles.pickerContainer}>
 									<Picker
 										selectedValue={selectedGroup}
@@ -223,6 +242,7 @@ const GoldPayin = ({ route, navigation }) => {
 								</View>
 								<Text style={{ fontWeight: "bold", marginTop: 10 }}>
 									Ticket
+									<Text style={{ color: "red" }}> *</Text>
 								</Text>
 								<View style={styles.pickerContainer}>
 									<Picker
@@ -243,7 +263,10 @@ const GoldPayin = ({ route, navigation }) => {
 								</View>
 								<View style={styles.row}>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Date</Text>
+										<Text style={{ fontWeight: "bold" }}>
+											Date
+											<Text style={{ color: "red" }}> *</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder="Select Date"
@@ -253,7 +276,10 @@ const GoldPayin = ({ route, navigation }) => {
 										/>
 									</View>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Receipt</Text>
+										<Text style={{ fontWeight: "bold" }}>
+											Receipt
+											<Text style={{ color: "red" }}> *</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder="Select Receipt"
@@ -265,7 +291,10 @@ const GoldPayin = ({ route, navigation }) => {
 								</View>
 								<View style={styles.row}>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Payment Type</Text>
+										<Text style={{ fontWeight: "bold" }}>
+											Payment Type
+											<Text style={{ color: "red" }}> *</Text>
+										</Text>
 										<View style={styles.pickerContainer}>
 											<Picker
 												selectedValue={paymentDetails}
@@ -281,7 +310,10 @@ const GoldPayin = ({ route, navigation }) => {
 										</View>
 									</View>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Amount</Text>
+										<Text style={{ fontWeight: "bold" }}>
+											Amount
+											<Text style={{ color: "red" }}> *</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder="Enter The Amount"
@@ -293,7 +325,10 @@ const GoldPayin = ({ route, navigation }) => {
 								</View>
 								{additionalInfo !== "" && (
 									<>
-										<Text style={{ fontWeight: "bold" }}>{additionalInfo}</Text>
+										<Text style={{ fontWeight: "bold" }}>
+											{additionalInfo}
+											<Text style={{ color: "red" }}> *</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder={`Enter ${additionalInfo}`}
@@ -360,8 +395,13 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	picker: {
-		height: 40,
+		height: 50,
 		width: "100%",
+		color: COLORS.black,
+	},
+	label: {
+		fontWeight: "bold",
+		marginTop: 10,
 	},
 });
 

@@ -61,14 +61,17 @@ export default function MyTaskListScreen({ navigation, route }) {
       <Header />
       <Text style={styles.header}>My Tasks</Text>
       {loading ? (
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      ) : (
-        <FlatList
-          data={tasks}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-        />
-      )}
+  <ActivityIndicator size="large" color={COLORS.primary} />
+) : tasks.length === 0 ? (
+  <Text style={styles.noTaskText}>No tasks Assigned.</Text>
+) : (
+  <FlatList
+    data={tasks}
+    keyExtractor={(item) => item._id}
+    renderItem={renderItem}
+  />
+)}
+
     </View>
     </KeyboardAvoidingView>
     </SafeAreaView>
@@ -120,6 +123,15 @@ const styles = StyleSheet.create({
     color: "#000",
     // marginBottom: 15,
   },
+
+  noTaskText: {
+  fontSize: 16,
+  fontWeight: "500",
+  textAlign: "center",
+  marginTop: 20,
+  color: "#888",
+},
+
   cardSubtitle: {
     alignItems: "flex-end",
 fontWeight:"bold",

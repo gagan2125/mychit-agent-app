@@ -1,8 +1,7 @@
-import { View, Text, ScrollView, StyleSheet, TextInput } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TextInput ,ActivityIndicator} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState, useEffect } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
-
 import COLORS from "../constants/color";
 import Header from "../components/Header";
 import RouteCustomerList from "../components/RouteCustomerList";
@@ -20,10 +19,8 @@ const RouteCustomer = ({ route, navigation }) => {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        setLoading(true)
-        const response = await axios.get(
-          `${baseUrl}/user/get-user`
-        );
+        setLoading(true);
+        const response = await axios.get(`${baseUrl}/user/get-user`);
         if (response.data) {
           setCustomers(response.data);
         } else {
@@ -32,7 +29,7 @@ const RouteCustomer = ({ route, navigation }) => {
       } catch (error) {
         console.error("Error fetching customer data:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     };
 
@@ -62,41 +59,43 @@ const RouteCustomer = ({ route, navigation }) => {
           />
         </View>
       </View>
-      {
-        loading ? (
-          <>
-            <Text style={{ textAlign: "center", fontSize: 20, marginTop: 30 }}>loading...</Text>
-          </>
-        ) : (
-          <>
-            <ScrollView
-              style={{ flex: 1, marginHorizontal: 22, marginTop: 12 }}
-              contentContainerStyle={{ paddingBottom: 80 }}
-              showsVerticalScrollIndicator={false}
-            >
-              {Array.isArray(customers) &&
-                customers
-                  .filter((customer) =>
-                    customer.full_name?.toLowerCase().includes(search.toLowerCase())
-                  )
-                  .map((customer, index) => (
-                    <RouteCustomerList
-                      key={index}
-                      idx={index}
-                      name={customer.full_name}
-                      cus_id={customer._id}
-                      phone={customer.phone_number}
-                      navigation={navigation}
-                      user={user}
-                      onPress={() =>
-                        navigation.navigate("Payin", { customer:customer._id })
-                      }
-                    />
-                  ))}
-            </ScrollView>
-          </>
-        )
-      }
+      {loading ? (
+        <>
+          <View style={{ marginTop: 30, alignItems: "center" }}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        </>
+      ) : (
+        <>
+          <ScrollView
+            style={{ flex: 1, marginHorizontal: 22, marginTop: 12 }}
+            contentContainerStyle={{ paddingBottom: 80 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {Array.isArray(customers) &&
+              customers
+                .filter((customer) =>
+                  customer.full_name
+                    ?.toLowerCase()
+                    .includes(search.toLowerCase())
+                )
+                .map((customer, index) => (
+                  <RouteCustomerList
+                    key={index}
+                    idx={index}
+                    name={customer.full_name}
+                    cus_id={customer._id}
+                    phone={customer.phone_number}
+                    navigation={navigation}
+                    user={user}
+                    onPress={() =>
+                      navigation.navigate("Payin", { customer: customer._id })
+                    }
+                  />
+                ))}
+          </ScrollView>
+        </>
+      )}
     </SafeAreaView>
   );
 };
@@ -124,13 +123,13 @@ const styles = StyleSheet.create({
   searchContainers: {
     marginTop: 15,
     padding: 0,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 0,
-    color: '#333',
+    color: "#333",
   },
 });
 

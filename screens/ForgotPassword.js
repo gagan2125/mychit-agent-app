@@ -102,7 +102,7 @@ export default function ForgotPassword({ navigation }) {
               <TextInput
                 style={styles.input}
                 placeholder="Enter your phone number"
-                placeholderTextColor={COLORS.black}
+                placeholderTextColor="#A9A9A9"
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
@@ -130,7 +130,7 @@ export default function ForgotPassword({ navigation }) {
               <TextInput
                 style={styles.input}
                 placeholder="Enter OTP"
-                placeholderTextColor={COLORS.black}
+                placeholderTextColor="#A9A9A9"
                 value={otp}
                 onChangeText={setOtp}
                 keyboardType="number-pad"

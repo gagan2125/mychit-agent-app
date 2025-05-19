@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet, TextInput, Modal, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TextInput, Modal, TouchableOpacity, Alert, ActivityIndicator} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState, useEffect } from "react";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -447,7 +447,9 @@ const ChitPayments = ({ route, navigation }) => {
       {
         loading ? (
           <>
-            <Text style={{ textAlign: "center", fontSize: 20, marginTop: 30 }}>loading...</Text>
+             <View style={{ marginTop: 30, alignItems: "center" }}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                      </View>
           </>
         ) : (
           <>
@@ -584,6 +586,19 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 16,
   },
+ noDataContainer: {
+    flex: 1,
+    justifyContent: 'center', 
+    alignItems: 'center',     
+    marginTop: 50,             
+  },
+
+   noDataText: {
+    fontSize: 20,              
+    color: '#555',             
+    textAlign: 'center',
+  },
+
 });
 
 export default ChitPayments;

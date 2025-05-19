@@ -54,7 +54,7 @@ const Payin = ({ route, navigation }) => {
 		};
 
 		fetchCustomer();
-	});
+	}, [customer]);
 
 	useEffect(() => {
 		const fetchEnrollDetails = async () => {
@@ -86,7 +86,7 @@ const Payin = ({ route, navigation }) => {
 		};
 
 		fetchEnrollDetails();
-	}, [customer, baseUrl]);
+	}, [customer]);
 
 	useEffect(() => {
 		const today = moment().format("DD-MM-YYYY");
@@ -134,6 +134,21 @@ const Payin = ({ route, navigation }) => {
 	};
 
 	const handleAddPayment = async () => {
+		// Validate mandatory fields before submission
+		if (
+			!customerInfo.full_name ||
+			!selectedGroup ||
+			!selectedTicket ||
+			!currentDate ||
+			!(receipt.receipt_no || receipt.receipt_no === 0) ||
+			!paymentDetails ||
+			!amount ||
+			(additionalInfo !== "" && !transactionId)
+		) {
+			Alert.alert("Validation Error", "Please fill all mandatory fields.");
+			return;
+		}
+
 		setIsLoading(true);
 		try {
 			const data = {
@@ -185,7 +200,9 @@ const Payin = ({ route, navigation }) => {
 						</View>
 						<View style={styles.container}>
 							<View style={styles.contentContainer}>
-								<Text style={{ fontWeight: "bold" }}>Name</Text>
+								<Text style={styles.label}>
+									Name<Text style={styles.star}>*</Text>
+								</Text>
 								<TextInput
 									style={styles.textInput}
 									placeholder="Enter The Name"
@@ -193,7 +210,9 @@ const Payin = ({ route, navigation }) => {
 									value={customerInfo.full_name}
 									editable={false}
 								/>
-								<Text style={{ fontWeight: "bold", marginTop: 10 }}>Group</Text>
+								<Text style={styles.label}>
+									Group<Text style={styles.star}>*</Text>
+								</Text>
 								<View style={styles.pickerContainer}>
 									<Picker
 										selectedValue={selectedGroup}
@@ -210,8 +229,8 @@ const Payin = ({ route, navigation }) => {
 										))}
 									</Picker>
 								</View>
-								<Text style={{ fontWeight: "bold", marginTop: 10 }}>
-									Ticket
+								<Text style={styles.label}>
+									Ticket<Text style={styles.star}>*</Text>
 								</Text>
 								<View style={styles.pickerContainer}>
 									<Picker
@@ -232,7 +251,9 @@ const Payin = ({ route, navigation }) => {
 								</View>
 								<View style={styles.row}>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Date</Text>
+										<Text style={styles.label}>
+											Date<Text style={styles.star}>*</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder="Select Date"
@@ -242,7 +263,9 @@ const Payin = ({ route, navigation }) => {
 										/>
 									</View>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Receipt</Text>
+										<Text style={styles.label}>
+											Receipt<Text style={styles.star}>*</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder="Select Receipt"
@@ -254,7 +277,9 @@ const Payin = ({ route, navigation }) => {
 								</View>
 								<View style={styles.row}>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Payment Type</Text>
+										<Text style={styles.label}>
+											Payment Type<Text style={styles.star}>*</Text>
+										</Text>
 										<View style={styles.pickerContainer}>
 											<Picker
 												selectedValue={paymentDetails}
@@ -269,7 +294,9 @@ const Payin = ({ route, navigation }) => {
 										</View>
 									</View>
 									<View style={styles.column}>
-										<Text style={{ fontWeight: "bold" }}>Amount</Text>
+										<Text style={styles.label}>
+											Amount<Text style={styles.star}>*</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder="Enter The Amount"
@@ -281,7 +308,10 @@ const Payin = ({ route, navigation }) => {
 								</View>
 								{additionalInfo !== "" && (
 									<>
-										<Text style={{ fontWeight: "bold" }}>{additionalInfo}</Text>
+										<Text style={styles.label}>
+											{additionalInfo}
+											<Text style={styles.star}>*</Text>
+										</Text>
 										<TextInput
 											style={styles.textInput}
 											placeholder={`Enter ${additionalInfo}`}
@@ -350,6 +380,13 @@ const styles = StyleSheet.create({
 	picker: {
 		height: 40,
 		width: "100%",
+	},
+	label: {
+		fontWeight: "bold",
+		marginTop: 10,
+	},
+	star: {
+		color: "red",
 	},
 });
 
